@@ -1,3 +1,9 @@
 streamlit
 pandas
+numpy
 openpyxl
+xlrd
+matplotlib
+seaborn
+pandas-profiling
+scikit-learn
