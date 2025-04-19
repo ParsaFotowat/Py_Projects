@@ -64,6 +64,6 @@ if uploaded_file:
             mime='text/csv',
         )
     except ValueError as e:
-        st.error("The uploaded file is not valid. Please upload a valid .xls, .xlsx, or .csv file.")
+        st.error("The uploaded file is not valid! Please upload a valid .xls, .xlsx, or .csv file.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
