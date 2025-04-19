@@ -1,19 +1,20 @@
 import streamlit as st
 import pandas as pd
+import dask.dataframe as dd
 
 uploaded_file = st.file_uploader("Upload your Excel (.xls, .xlsx) or CSV file")
 if uploaded_file:
     try:
         @st.cache_data
-        def load_file(uploaded_file):
+        def load_file(uploaded_file, nrows=None):
             if uploaded_file.name.endswith('.xlsx'):
-                return pd.read_excel(uploaded_file, engine='openpyxl')
+                return pd.read_excel(uploaded_file, engine='openpyxl', nrows=nrows)
             elif uploaded_file.name.endswith('.xls'):
-                return pd.read_excel(uploaded_file, engine='xlrd')
+                return pd.read_excel(uploaded_file, engine='xlrd', nrows=nrows)
             elif uploaded_file.name.endswith('.csv'):
-                return pd.read_csv(uploaded_file)
+                return pd.read_csv(uploaded_file, nrows=nrows)
 
-        df = load_file(uploaded_file)
+        df = load_file(uploaded_file, nrows=10000)
 
         if st.checkbox("Clean Data"):
             if st.checkbox("Drop The Missing Values"):
