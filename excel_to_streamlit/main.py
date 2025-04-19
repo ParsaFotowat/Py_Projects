@@ -140,5 +140,4 @@ if st.session_state.df is not None:
 
         st.write("Download Results")
         st.download_button("Download Cleaned Dataset", df.to_csv(index=False), "cleaned_data.csv", "text/csv")
-import sys
-print(sys.executable)
+        st.download_button("Download Clustered Dataset", df.to_csv(index=False), "clustered_data.csv", "text/csv")
