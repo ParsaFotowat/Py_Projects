@@ -1,28 +1,28 @@
 import streamlit as st
 import pandas as pd
 
-uploaded_file = st.file_uploader("Upload your Excel or CSV file")
+uploaded_file = st.file_uploader("Upload your Excel (.xls, .xlsx) or CSV file")
 if uploaded_file:
     try:
-        # Check the file extension
-        if uploaded_file.name.endswith('.xlsx'):
-            # Read Excel file
-            df = pd.read_excel(uploaded_file, engine='openpyxl')
-        elif uploaded_file.name.endswith('.csv'):
-            # Read CSV file
-            df = pd.read_csv(uploaded_file)
-        else:
-            st.error("Unsupported file format. Please upload a .xlsx or .csv file.")
-            st.stop()
+        @st.cache_data
+        def load_file(uploaded_file):
+            if uploaded_file.name.endswith('.xlsx'):
+                return pd.read_excel(uploaded_file, engine='openpyxl')
+            elif uploaded_file.name.endswith('.xls'):
+                return pd.read_excel(uploaded_file, engine='xlrd')
+            elif uploaded_file.name.endswith('.csv'):
+                return pd.read_csv(uploaded_file)
+
+        df = load_file(uploaded_file)
 
         if st.checkbox("Clean Data"):
-            if st.checkbox("Drop Missing Values"):
+            if st.checkbox("Drop The Missing Values"):
                 df = df.dropna()
             if st.checkbox("Drop Duplicates"):
                 df = df.drop_duplicates()
 
         # Display the data and a chart
-        st.write("Preview:", df.head())
+        st.write("Preview:", df.head(100))  # Limit to 100 rows
         st.write("Data Summary:")
         st.write(df.describe())
         st.write("Missing Values:")
@@ -44,10 +44,15 @@ if uploaded_file:
         st.write("Create a Pivot Table:")
         index = st.selectbox("Select Index", df.columns)
         values = st.selectbox("Select Values", df.select_dtypes(include=['number']).columns)
-        pivot_table = df.pivot_table(index=index, values=values, aggfunc='sum')
+
+        @st.cache_data
+        def create_pivot_table(df, index, values):
+            return df.pivot_table(index=index, values=values, aggfunc='sum')
+
+        pivot_table = create_pivot_table(df, index, values)
         st.write(pivot_table)
 
-        @st.cache
+        @st.cache_data
         def convert_df_to_csv(df):
             return df.to_csv(index=False).encode('utf-8')
 
@@ -59,6 +64,6 @@ if uploaded_file:
             mime='text/csv',
         )
     except ValueError as e:
-        st.error("The uploaded file is not valid. Please upload a valid .xlsx or .csv file.")
+        st.error("The uploaded file is not valid. Please upload a valid .xls, .xlsx, or .csv file.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
