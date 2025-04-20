@@ -15,6 +15,19 @@ st.set_page_config(page_title="Data Analysis Suite", layout="wide")
 if "df" not in st.session_state:
     st.session_state.df = None
 
+@st.cache_data
+def load_file(uploaded_file):
+    if uploaded_file.name.endswith(".xlsx"):
+        return pd.read_excel(uploaded_file, engine="openpyxl")
+    elif uploaded_file.name.endswith(".xls"):
+        return pd.read_excel(uploaded_file, engine="xlrd")
+    elif uploaded_file.name.endswith(".csv"):
+        return pd.read_csv(uploaded_file)
+
+@st.cache_data
+def generate_profile_report(data):
+    return ProfileReport(data, title="Profiling Report", explorative=True)
+
 # 1) Drag-and-Drop File Upload
 st.sidebar.header("Upload Your File")
 uploaded_files = st.sidebar.file_uploader(
@@ -22,18 +35,14 @@ uploaded_files = st.sidebar.file_uploader(
 )
 
 if uploaded_files:
-    dfs = []
-    for uploaded_file in uploaded_files:
-        if uploaded_file.name.endswith(".xlsx"):
-            dfs.append(pd.read_excel(uploaded_file, engine="openpyxl"))
-        elif uploaded_file.name.endswith(".xls"):
-            dfs.append(pd.read_excel(uploaded_file, engine="xlrd"))
-        elif uploaded_file.name.endswith(".csv"):
-            dfs.append(pd.read_csv(uploaded_file))
+    dfs = [load_file(file) for file in uploaded_files]
     st.session_state.df = pd.concat(dfs, ignore_index=True)
 
 if st.session_state.df is not None:
     df = st.session_state.df
+    if len(df) > 10000:
+        st.warning("The uploaded file is large. Processing may take some time.")
+    sampled_data = df.sample(n=min(1000, len(df)), random_state=42)  # Limit to 1,000 rows
 
     # Tabs for UX segmentation
     tabs = st.tabs(["Raw View", "Clean & Transform", "Visualize", "Insights"])
@@ -51,12 +60,12 @@ if st.session_state.df is not None:
 
         st.write("Missing Value Heatmap:")
         fig, ax = plt.subplots(figsize=(10, 5))
-        sns.heatmap(df.isnull(), cbar=False, cmap="viridis", ax=ax)
+        sns.heatmap(sampled_data.isnull(), cbar=False, cmap="viridis", ax=ax)
         st.pyplot(fig)
 
         # Generate and display a profiling report
         st.write("Data Profiling Report")
-        profile = ProfileReport(df, title="Profiling Report", explorative=True)
+        profile = generate_profile_report(df)
         st.download_button(
             label="Download Profiling Report (HTML)",
             data=profile.to_html(),
@@ -133,6 +142,9 @@ if st.session_state.df is not None:
         num_clusters = st.slider("Number of Clusters", 2, 10, 3)
         numeric_data = df.select_dtypes(include=["number"]).dropna()
 
+        if len(numeric_data) > 1000:  # Limit to 1,000 rows for clustering
+            numeric_data = numeric_data.sample(n=1000, random_state=42)
+
         if len(numeric_data) < num_clusters:
             st.warning(f"Number of samples ({len(numeric_data)}) is less than the number of clusters ({num_clusters}). Reduce the number of clusters.")
         else:
@@ -155,3 +167,12 @@ if st.session_state.df is not None:
         st.write("Download Results")
         st.download_button("Download Cleaned Dataset", df.to_csv(index=False), "cleaned_data.csv", "text/csv")
         st.download_button("Download Clustered Dataset", df.to_csv(index=False), "clustered_data.csv", "text/csv")
+
+    profile = generate_profile_report(st.session_state.df)
+    st.download_button(
+        label="Download Profiling Report (HTML)",
+        data=profile.to_html(),
+        file_name="profiling_report.html",
+        mime="text/html",
+    )
+    st.components.v1.html(profile.to_html(), height=1000, scrolling=True)
