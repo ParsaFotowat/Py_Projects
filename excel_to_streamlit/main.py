@@ -94,12 +94,15 @@ if st.session_state.df is not None:
 
         st.write("Missing Value Imputation Tools")
         imputation_method = st.selectbox("Select Imputation Method", ["None", "Drop Rows", "Fill with Mean", "Fill with Median", "Fill with Mode"])
+
         if imputation_method == "Drop Rows":
             df = df.dropna()
         elif imputation_method == "Fill with Mean":
-            df = df.fillna(df.mean())
+            numeric_columns = df.select_dtypes(include=["number"]).columns
+            df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].mean())
         elif imputation_method == "Fill with Median":
-            df = df.fillna(df.median())
+            numeric_columns = df.select_dtypes(include=["number"]).columns
+            df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].median())
         elif imputation_method == "Fill with Mode":
             df = df.fillna(df.mode().iloc[0])
 
