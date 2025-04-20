@@ -177,14 +177,16 @@ if st.session_state.df is not None:
             st.write(f"Model Intercept: {model.intercept_}")
 
         st.write("Download Results")
-        st.download_button("Download Cleaned Dataset", df.to_csv(index=False), "cleaned_data.csv", "text/csv")
-        st.download_button("Download Clustered Dataset", df.to_csv(index=False), "clustered_data.csv", "text/csv")
+        st.download_button("Download Cleaned Dataset", df.to_csv(index=False), "cleaned_data.csv", "text/csv", key="cleaned_data")
+        st.download_button("Download Clustered Dataset", df.to_csv(index=False), "clustered_data.csv", "text/csv", key="clustered_data")
 
-    profile = generate_profile_report(st.session_state.df)
-    st.download_button(
-        label="Download Profiling Report (HTML)",
-        data=profile.to_html(),
-        file_name="profiling_report.html",
-        mime="text/html",
-    )
-    st.components.v1.html(profile.to_html(), height=1000, scrolling=True)
+# Profiling Report Download
+profile = generate_profile_report(st.session_state.df)
+st.download_button(
+    label="Download Profiling Report (HTML)",
+    data=profile.to_html(),
+    file_name="profiling_report.html",
+    mime="text/html",
+    key="profiling_report",
+)
+st.components.v1.html(profile.to_html(), height=1000, scrolling=True)
