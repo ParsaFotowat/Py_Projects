@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use("Agg")  # Use the Agg backend for non-interactive environments
+
 import streamlit as st
 import pandas as pd
 import numpy as np
