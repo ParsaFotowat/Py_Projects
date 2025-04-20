@@ -150,16 +150,18 @@ if st.session_state.df is not None:
         numeric_data = df.select_dtypes(include=["number"]).dropna()
 
         if len(numeric_data) > 1000:  # Limit to 1,000 rows for clustering
-            numeric_data = numeric_data.sample(n=1000, random_state=42)
+            sampled_data = numeric_data.sample(n=1000, random_state=42)
+        else:
+            sampled_data = numeric_data
 
-        if len(numeric_data) < num_clusters:
-            st.warning(f"Number of samples ({len(numeric_data)}) is less than the number of clusters ({num_clusters}). Reduce the number of clusters.")
+        if len(sampled_data) < num_clusters:
+            st.warning(f"Number of samples ({len(sampled_data)}) is less than the number of clusters ({num_clusters}). Reduce the number of clusters.")
         else:
             kmeans = KMeans(n_clusters=num_clusters)
-            kmeans.fit(numeric_data)
-            df["Cluster"] = kmeans.labels_
-            st.write("Clustered Data Preview:")
-            st.dataframe(df.head(100))
+            kmeans.fit(sampled_data)
+            sampled_data["Cluster"] = kmeans.labels_
+            st.write("Clustered Data Preview (Sampled):")
+            st.dataframe(sampled_data.head(100))
 
         st.write("Regression Target Prediction (Light AutoML)")
         target_col = st.selectbox("Select Target Column (Regression)", numeric_columns)
