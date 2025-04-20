@@ -181,12 +181,17 @@ if st.session_state.df is not None:
         st.download_button("Download Clustered Dataset", df.to_csv(index=False), "clustered_data.csv", "text/csv", key="clustered_data")
 
 # Profiling Report Download
-profile = generate_profile_report(st.session_state.df)
-st.download_button(
-    label="Download Profiling Report (HTML)",
-    data=profile.to_html(),
-    file_name="profiling_report.html",
-    mime="text/html",
-    key="profiling_report",
-)
-st.components.v1.html(profile.to_html(), height=1000, scrolling=True)
+if not st.session_state.df.empty:  # Check if the DataFrame is not empty
+    profile = generate_profile_report(st.session_state.df)
+    st.download_button(
+        label="Download Profiling Report (HTML)",
+        data=profile.to_html(),
+        file_name="profiling_report.html",
+        mime="text/html",
+        key="profiling_report",
+    )
+    st.components.v1.html(profile.to_html(), height=1000, scrolling=True)
+else:
+    st.warning("The DataFrame is empty. Please upload a valid file to generate the profiling report.")
+
+st.write("DataFrame Preview:", st.session_state.df)
