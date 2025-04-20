@@ -123,8 +123,12 @@ if st.session_state.df is not None:
         if chart_type == "Bar Chart":
             x_col = st.selectbox("X-axis", categorical_columns)
             y_col = st.selectbox("Y-axis", numeric_columns)
-            bar_data = df.groupby(x_col)[y_col].sum().reset_index()
-            st.bar_chart(bar_data.set_index(x_col))
+
+            if x_col and y_col:  # Ensure both columns are selected
+                bar_data = df.groupby(x_col)[y_col].sum().reset_index()
+                st.bar_chart(bar_data.set_index(x_col))
+            else:
+                st.warning("Please select both X-axis and Y-axis columns for the Bar Chart.")
         elif chart_type == "Histogram":
             hist_col = st.selectbox("Select Column", numeric_columns)
             st.histogram(df[hist_col])
