@@ -7,3 +7,4 @@ ydata-profiling
 scikit-learn
 openpyxl
 xlrd
+setuptools
