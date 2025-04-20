@@ -1,5 +1,9 @@
 streamlit
 pandas
 numpy
+seaborn
+matplotlib
+ydata-profiling
+scikit-learn
 openpyxl
 xlrd

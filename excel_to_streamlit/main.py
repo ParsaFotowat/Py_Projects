@@ -3,8 +3,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from pandas_profiling import ProfileReport
-from streamlit_pandas_profiling import st_profile_report
+from ydata_profiling import ProfileReport
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
@@ -54,6 +53,17 @@ if st.session_state.df is not None:
         fig, ax = plt.subplots(figsize=(10, 5))
         sns.heatmap(df.isnull(), cbar=False, cmap="viridis", ax=ax)
         st.pyplot(fig)
+
+        # Generate and display a profiling report
+        st.write("Data Profiling Report")
+        profile = ProfileReport(df, title="Profiling Report", explorative=True)
+        st.download_button(
+            label="Download Profiling Report (HTML)",
+            data=profile.to_html(),
+            file_name="profiling_report.html",
+            mime="text/html",
+        )
+        st.components.v1.html(profile.to_html(), height=1000, scrolling=True)
 
     # Tab 2: Clean & Transform
     with tabs[1]:
