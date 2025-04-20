@@ -66,6 +66,17 @@ if st.session_state.df is not None:
         sns.heatmap(sampled_data.isnull(), cbar=False, cmap="viridis", ax=ax)
         st.pyplot(fig)
 
+        # Correlation Heatmap
+        st.write("Correlation Heatmap:")
+        numeric_columns = df.select_dtypes(include=["number"]).columns
+        if len(numeric_columns) > 1:  # Ensure there are at least two numeric columns
+            corr_matrix = df[numeric_columns].corr()
+            fig, ax = plt.subplots(figsize=(10, 8))
+            sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", ax=ax)
+            st.pyplot(fig)
+        else:
+            st.warning("Not enough numeric columns to compute a correlation heatmap.")
+
         # Generate and display a profiling report
         st.write("Data Profiling Report")
         profile = generate_profile_report(df)
