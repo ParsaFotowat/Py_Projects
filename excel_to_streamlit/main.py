@@ -131,12 +131,16 @@ if st.session_state.df is not None:
         st.header("Insights & ML-Powered Analysis")
         st.write("Auto Clustering (KMeans Preview)")
         num_clusters = st.slider("Number of Clusters", 2, 10, 3)
-        kmeans = KMeans(n_clusters=num_clusters)
         numeric_data = df.select_dtypes(include=["number"]).dropna()
-        kmeans.fit(numeric_data)
-        df["Cluster"] = kmeans.labels_
-        st.write("Clustered Data Preview:")
-        st.dataframe(df.head(100))
+
+        if len(numeric_data) < num_clusters:
+            st.warning(f"Number of samples ({len(numeric_data)}) is less than the number of clusters ({num_clusters}). Reduce the number of clusters.")
+        else:
+            kmeans = KMeans(n_clusters=num_clusters)
+            kmeans.fit(numeric_data)
+            df["Cluster"] = kmeans.labels_
+            st.write("Clustered Data Preview:")
+            st.dataframe(df.head(100))
 
         st.write("Regression Target Prediction (Light AutoML)")
         target_col = st.selectbox("Select Target Column (Regression)", numeric_columns)
