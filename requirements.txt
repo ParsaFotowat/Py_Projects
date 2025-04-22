@@ -11,3 +11,4 @@ setuptools
 opencv-python
 mediapipe
 pyautogui
+opencv-python
