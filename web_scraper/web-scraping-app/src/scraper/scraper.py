@@ -1,3 +1,8 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import random
+
 class Scraper:
     def __init__(self):
         self.session = requests.Session()
@@ -13,18 +18,33 @@ class Scraper:
 
     def scrape_data(self, url, tags, data_type):
         headers = {'User-Agent': self.user_agent}
-        response = self.session.get(url, headers=headers)
+        try:
+            response = self.session.get(url, headers=headers)
+            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Error fetching URL: {e}")
 
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            if data_type == 'text':
-                return [element.get_text() for element in soup.select(tags)]
-            elif data_type == 'images':
-                return [img['src'] for img in soup.select(tags) if img.has_attr('src')]
-            elif data_type == 'tables':
-                return pd.read_html(response.content)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        if data_type == 'text':
+            elements = soup.select(tags)
+            if not elements:
+                raise Exception(f"No elements found for tags: {tags}")
+            return [element.get_text(strip=True) for element in elements]
+        elif data_type == 'images':
+            elements = soup.select(tags)
+            if not elements:
+                raise Exception(f"No images found for tags: {tags}")
+            return [img['src'] for img in elements if img.has_attr('src')]
+        elif data_type == 'tables':
+            try:
+                tables = pd.read_html(response.content)
+                if not tables:
+                    raise Exception("No tables found on the page.")
+                return tables
+            except ValueError:
+                raise Exception("No tables found on the page.")
         else:
-            raise Exception(f"Failed to retrieve data from {url} with status code {response.status_code}")
+            raise Exception(f"Unsupported data type: {data_type}")
 
     def retry_logic(self, url, tags, data_type, retries=3):
         for attempt in range(retries):
@@ -34,4 +54,4 @@ class Scraper:
                 if attempt < retries - 1:
                     continue
                 else:
-                    raise e
+                    raise Exception(f"Failed after {retries} attempts: {e}")
