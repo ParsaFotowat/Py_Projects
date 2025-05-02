@@ -10,7 +10,7 @@ def main():
     url = st.text_input("Enter URL:")
     tags = st.text_input("Enter CSS/XPath tags (comma-separated):")
     frequency = st.number_input("Scraping Frequency (in minutes):", min_value=1, value=5)
-    data_type = st.selectbox("Select Data Type:", ["Text", "Images", "Tables"])
+    data_type = st.selectbox("Select Data Type:", ["Text", "Images", "Tables"]).lower()  # Convert to lowercase
     
     if st.button("Scrape"):
         if url:
