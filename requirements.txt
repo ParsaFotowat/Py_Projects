@@ -12,3 +12,7 @@ opencv-python
 mediapipe
 pyautogui
 beautifulsoup4
+requests
+selenium
+altair
+plotly

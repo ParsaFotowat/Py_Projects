@@ -1,0 +1,1 @@
+# This file initializes the scraper module, allowing for the import of scraping functionalities.
