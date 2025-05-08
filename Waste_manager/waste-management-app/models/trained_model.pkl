@@ -1,0 +1,5 @@
+The file /waste-management-app/waste-management-app/models/trained_model.pkl is a binary file that will contain the serialized trained machine learning model. As such, it cannot be represented in text format. 
+
+To create this file, you would typically use a library like `pickle` or `joblib` in Python to save your trained model after training it in your model training notebook. 
+
+For now, this file is intentionally left blank as it will be generated programmatically after training the model.
