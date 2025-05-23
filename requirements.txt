@@ -16,3 +16,4 @@ requests
 selenium
 altair
 plotly
+pycryptodome
