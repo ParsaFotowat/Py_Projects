@@ -1,65 +1,125 @@
-import streamlit as st
 from Crypto.Cipher import DES3
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
-import base64
 
-# Function to generate a valid 3DES key with correct parity
-def generate_key():
-    while True:
-        key = get_random_bytes(24)  # 24 bytes for 3DES key
-        try:
-            key = DES3.adjust_key_parity(key)
-            return key
-        except ValueError:
-            continue  # Retry if key parity adjustment fails
 
-def encrypt_cbc(plaintext, key):
-    cipher = DES3.new(key, DES3.MODE_CBC)
-    iv = cipher.iv
-    padded_plaintext = pad(plaintext.encode('utf-8'), DES3.block_size)
-    ciphertext = cipher.encrypt(padded_plaintext)
-    return base64.b64encode(iv + ciphertext).decode('utf-8')
+class _3DES_CBC:
+    """
+    This is a class to handle 3DES encryption and decryption in CBC mode.
+    """
 
-def decrypt_cbc(ciphertext, key):
+    def __init__(self, key1: bytes, key2: bytes, key3: bytes):
+        """
+        This initializes the 3DES_CBC cipher with three 8-byte (64-bit) keys.
+
+        Args:
+            key1 (bytes): The first 8-byte key.
+            key2 (bytes): The second 8-byte key.
+            key3 (bytes): The third 8-byte key.
+
+        Raises:
+            ValueError: If any key is not 8 bytes long.
+        """
+        if not (len(key1) == 8 and len(key2) == 8 and len(key3) == 8):
+            raise ValueError("All of the 3DES keys must be 8 bytes long (64 bits).")
+
+        self.key = key1 + key2 + key3
+        self.block_size = DES3.block_size
+
+    def encrypt(self, plaintext: bytes) -> tuple[bytes, bytes]:
+        """
+        This encrypts the plaintext using 3DES in CBC mode.
+
+        Args:
+            plaintext (bytes): The data to be encrypted.
+
+        Returns:
+            tuple[bytes, bytes]: A tuple containing the IV and the ciphertext.
+                                 The important part is that the IV is returned, so it can be used for decryption.
+        """
+
+        iv = get_random_bytes(self.block_size)
+
+        cipher = DES3.new(self.key, DES3.MODE_CBC, iv=iv)
+
+        padded_plaintext = pad(plaintext, self.block_size)
+
+        ciphertext = cipher.encrypt(padded_plaintext)
+
+        return iv, ciphertext
+
+    def decrypt(self, iv: bytes, ciphertext: bytes) -> bytes:
+        """
+        This decrypts the ciphertext using 3DES in CBC mode.
+
+        Args:
+            iv (bytes): The initialization vector used during encryption.
+            ciphertext (bytes): The data to be decrypted.
+
+        Returns:
+            bytes: The original decrypted plaintext.
+
+        Raises:
+            ValueError: If the IV is not 8 bytes long.
+        """
+        if len(iv) != self.block_size:
+            raise ValueError(f"IV must be {self.block_size} bytes long.")
+
+        cipher = DES3.new(self.key, DES3.MODE_CBC, iv=iv)
+
+        padded_plaintext = cipher.decrypt(ciphertext)
+
+        plaintext = unpad(padded_plaintext, self.block_size)
+
+        return plaintext
+
+
+if __name__ == "__main__":
+
+    key1 = get_random_bytes(8)
+    key2 = get_random_bytes(8)
+    key3 = get_random_bytes(8)
+
+    print(f"Generated Key 1: {key1.hex()}")
+    print(f"Generated Key 2: {key2.hex()}")
+    print(f"Generated Key 3: {key3.hex()}\n")
+
     try:
-        raw = base64.b64decode(ciphertext)
-        iv = raw[:DES3.block_size]
-        cipher = DES3.new(key, DES3.MODE_CBC, iv)
-        padded_plaintext = cipher.decrypt(raw[DES3.block_size:])
-        return unpad(padded_plaintext, DES3.block_size).decode('utf-8')
-    except (ValueError, KeyError, base64.binascii.Error) as e:
-        return f"Decryption failed: {str(e)}"
+        cipher_3des = _3DES_CBC(key1, key2, key3)
+    except ValueError as error:
+        print(f"Error creating cipher: {error}")
+        exit()
 
-st.title("3DES CBC Encryption/Decryption Demo")
+    original_plaintext = b"Hi every body , we are going to encrypt this message with 3DES CBC mode :)"
 
-# Key management
-if "key" not in st.session_state:
-    st.session_state["key"] = generate_key()
+    print(f"Original plaintext: {original_plaintext.decode('utf-8')}\n")
 
-if st.button("Generate New Key"):
-    st.session_state["key"] = generate_key()
-st.write("**Current Key (Base64):**")
-st.code(base64.b64encode(st.session_state["key"]).decode('utf-8'))
+    print("..... Encryption .....")
+    iv_encrypted, ciphertext = cipher_3des.encrypt(original_plaintext)
+    print(f"Generated IV (for decryption): {iv_encrypted.hex()}")
+    print(f"Ciphertext (hex): {ciphertext.hex()}\n")
 
-tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
+    print("..... Decryption .....")
+    try:
+        decrypted_plaintext = cipher_3des.decrypt(iv_encrypted, ciphertext)
+        print(f"Decrypted plaintext: {decrypted_plaintext.decode('utf-8')}")
+        print(f"Decryption successful: {original_plaintext == decrypted_plaintext}\n")
+    except ValueError as error:
+        print(f"Error during decryption: {error}")
+    except Exception as error:
+        print(f"An unexpected error occurred during decryption: {error}")
 
-with tab1:
-    plaintext = st.text_area("Enter plaintext to encrypt:")
-    if st.button("Encrypt"):
-        if plaintext:
-            ciphertext = encrypt_cbc(plaintext, st.session_state["key"])
-            st.success("Ciphertext (Base64):")
-            st.code(ciphertext)
-        else:
-            st.warning("Please enter plaintext.")
+    print("\n..... Short Message Demonstration .....")
+    short_message = b"Short message"
+    print(f"Original short message: {short_message.decode('utf-8')}")
 
-with tab2:
-    ciphertext_input = st.text_area("Enter ciphertext (Base64) to decrypt:")
-    if st.button("Decrypt"):
-        if ciphertext_input:
-            decrypted = decrypt_cbc(ciphertext_input, st.session_state["key"])
-            st.success("Decrypted Text:")
-            st.code(decrypted)
-        else:
-            st.warning("Please enter ciphertext.")
+    iv_short, ciphertext_short = cipher_3des.encrypt(short_message)
+    print(f"Generated IV (short): {iv_short.hex()}")
+    print(f"Ciphertext (short, hex): {ciphertext_short.hex()}")
+    print(
+        f"Ciphertext length (short): {len(ciphertext_short)} bytes \t"
+        f"(expected: {cipher_3des.block_size} bytes due to padding)")
+
+    decrypted_short_message = cipher_3des.decrypt(iv_short, ciphertext_short)
+    print(f"Decrypted short message: {decrypted_short_message.decode('utf-8')}")
+    print(f"Decryption successful (short): {short_message == decrypted_short_message}")
