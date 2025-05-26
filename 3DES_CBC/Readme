@@ -1,0 +1,55 @@
+# 3DES CBC Encryption/Decryption Streamlit App
+
+This web app provides a simple, interactive interface for encrypting and decrypting messages using the 3DES (Triple DES) algorithm in CBC (Cipher Block Chaining) mode. It is built with [Streamlit](https://streamlit.io/) and uses [PyCryptodome](https://www.pycryptodome.org/) for cryptographic operations.
+
+## Features
+
+- **3DES CBC Encryption:** Enter any plaintext message and encrypt it using three independent 8-byte keys.
+- **3DES CBC Decryption:** Paste the IV and ciphertext to decrypt and recover the original message.
+- **Key Management:** Generate random keys or input your own keys in hexadecimal format.
+- **Base64 Encoding:** IV and ciphertext are displayed in base64 for easy copy-paste and sharing.
+- **Side-by-side UI:** Encrypt and decrypt panels are visible at the same time for convenience.
+
+## How to Run Locally
+
+1. **Clone the repository:**
+    ```bash
+    git clone https://github.com/ParsaFotowat/Py_Projects/tree/master/3DES_CBC
+    cd your-repo/3DES_CBC
+    ```
+
+2. **Install dependencies:**
+    ```bash
+    pip install -r req.txt
+    ```
+
+3. **Start the app:**
+    ```bash
+    streamlit run st_app.py
+    ```
+
+4. **Open your browser:**  
+   Visit the website to use the app.
+
+## File Structure
+
+- `st_app.py` — Main Streamlit application.
+- `req.txt` — List of required Python packages.
+
+## Requirements
+
+- Python 3.8+
+- [PyCryptodome](https://pypi.org/project/pycryptodome/)
+- [Streamlit](https://pypi.org/project/streamlit/)
+
+## Security Note
+
+This app is for educational/demo purposes. Do **not** use it for sensitive or production cryptography. Always follow best practices for key management and cryptographic security.
+
+## License
+
+MIT License
+
+---
+
+Made by [Parsa Fotowat](https://github.com/ParsaFotowat)
