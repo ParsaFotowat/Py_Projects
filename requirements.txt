@@ -1,18 +1,35 @@
-streamlit
-pandas
+# Core data handling and analysis
 numpy
-seaborn
-matplotlib
-scikit-learn
-openpyxl
-xlrd
-setuptools
-opencv-python
-mediapipe
-pyautogui
-beautifulsoup4
+pandas
+scipy
+
+# API interaction
 requests
-selenium
-altair
-plotly
-pycryptodome
+python-dotenv
+
+# Plotting (optional, but often useful)
+matplotlib
+seaborn
+
+# Trading specific (examples, can be changed later)
+# ccxt  # For interacting with cryptocurrency exchanges
+# alpaca-trade-api # For interacting with Alpaca
+
+# Utilities
+python-dateutil
+pytz
+
+# Testing
+pytest
+pytest-cov
+
+# Linting and formatting (optional, good practice)
+# flake8
+# black
+# isort
+
+# Technical Analysis
+ta
+
+# Generative AI for Sentiment Analysis
+google-generativeai
